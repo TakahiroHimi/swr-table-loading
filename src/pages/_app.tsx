@@ -7,13 +7,13 @@ import styled, {
 import cssBaseLine from "smarthr-normalize-css";
 import { createTheme, ThemeProvider as SHUIThemeProvider } from "smarthr-ui";
 
-export const smarthrUITheme = createTheme();
+export const theme = createTheme();
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
-      <SHUIThemeProvider theme={smarthrUITheme}>
-        <ThemeProvider theme={smarthrUITheme}>
+      <SHUIThemeProvider theme={theme}>
+        <ThemeProvider theme={theme}>
           <GlobalStyle />
           <ContainerLayout>
             <Component {...pageProps} />
@@ -29,8 +29,8 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const ContainerLayout = styled.div(
-  ({ theme: { space, contentWidth } }) => css`
-    max-width: ${contentWidth};
+  ({ theme: { space } }) => css`
+    max-width: 920px;
     margin-inline: auto;
     padding: ${space(1.5)} ${space(2)} ${space(4)};
   `
