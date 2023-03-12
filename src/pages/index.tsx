@@ -22,12 +22,20 @@ const fetcher = (url: string, method?: string) =>
 
 const usersAPIPath = "/api/users";
 
+type User = {
+  id: string;
+  name: string;
+};
+
 export default function Home() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { data, error, mutate, isLoading } = useSWR<
-    { id: string; name: string }[]
-  >(usersAPIPath, fetcher, { keepPreviousData: true });
+  const {
+    data: userList,
+    error,
+    mutate,
+    isLoading,
+  } = useSWR<User[]>(usersAPIPath, fetcher, { keepPreviousData: true });
 
   const { trigger, isMutating } = useSWRMutation(
     usersAPIPath,
@@ -50,12 +58,12 @@ export default function Home() {
               </thead>
               {error ? (
                 <ErrorBody />
-              ) : !data ? (
+              ) : !userList ? (
                 <LoadingBody />
               ) : (
                 <StyledTbody>
                   {isLoading && <LoadingTableBodyCover />}
-                  {data.map((user) => (
+                  {userList.map((user) => (
                     <tr key={user.id}>
                       <Td>{user.id}</Td>
                       <Td>{user.name}</Td>
