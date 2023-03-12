@@ -28,6 +28,7 @@ export default function Home() {
   const { data, error, mutate, isLoading } = useSWR<
     { id: string; name: string }[]
   >(usersAPIPath, fetcher, { keepPreviousData: true });
+
   const { trigger, isMutating } = useSWRMutation(
     usersAPIPath,
     () => fetcher(usersAPIPath, "POST"),
