@@ -1,6 +1,9 @@
+import { ErrorBody } from "@/components/ErrorBody";
 import { LoadingBody } from "@/components/LoadingBody";
 import { LoadingTableBodyCover } from "@/components/LoadingTableBodyCover";
+import { useState } from "react";
 import {
+  ActionDialog,
   Base,
   Button,
   Cluster,
@@ -10,7 +13,7 @@ import {
   Td,
   Th,
 } from "smarthr-ui";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
@@ -20,11 +23,11 @@ const fetcher = (url: string, method?: string) =>
 const usersAPIPath = "/api/users";
 
 export default function Home() {
-  const { data, mutate, isLoading } = useSWR<{ id: string; name: string }[]>(
-    usersAPIPath,
-    fetcher,
-    { keepPreviousData: true }
-  );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const { data, error, mutate, isLoading } = useSWR<
+    { id: string; name: string }[]
+  >(usersAPIPath, fetcher, { keepPreviousData: true });
   const { trigger, isMutating } = useSWRMutation(
     usersAPIPath,
     () => fetcher(usersAPIPath, "POST"),
@@ -44,7 +47,9 @@ export default function Home() {
                   <Th>名前</Th>
                 </tr>
               </thead>
-              {!data ? (
+              {error ? (
+                <ErrorBody />
+              ) : !data ? (
                 <LoadingBody />
               ) : (
                 <StyledTbody>
@@ -55,23 +60,40 @@ export default function Home() {
                       <Td>{user.name}</Td>
                     </tr>
                   ))}
+                  <tr>
+                    <Td colSpan={2}>
+                      <Cluster justify="center">
+                        <Button
+                          variant="primary"
+                          onClick={() => setIsDialogOpen(true)}
+                          disabled={isLoading}
+                        >
+                          ユーザーを追加
+                        </Button>
+                      </Cluster>
+                    </Td>
+                  </tr>
                 </StyledTbody>
               )}
             </Table>
           </Base>
-          <Cluster justify="center">
-            <Button
-              variant="primary"
-              onClick={async () => {
-                await trigger();
-                await mutate(undefined);
-              }}
-              loading={isMutating}
-            >
-              {isMutating ? "追加中" : "ユーザーを追加"}
-            </Button>
-          </Cluster>
         </Stack>
+        <ActionDialog
+          title="ユーザーの追加"
+          actionText="追加"
+          onClickAction={async () => {
+            await trigger();
+            setIsDialogOpen(false);
+            await mutate(undefined);
+          }}
+          onClickClose={() => setIsDialogOpen(false)}
+          isOpen={isDialogOpen}
+          responseMessage={isMutating ? { status: "processing" } : undefined}
+        >
+          <StyledDialogChildren>
+            ユーザーを追加します。よろしいですか？
+          </StyledDialogChildren>
+        </ActionDialog>
       </main>
     </>
   );
@@ -80,3 +102,9 @@ export default function Home() {
 const StyledTbody = styled.tbody`
   position: relative;
 `;
+
+const StyledDialogChildren = styled.div(
+  ({ theme: { space } }) => css`
+    padding: ${space(1.5)} ${space(2)};
+  `
+);
